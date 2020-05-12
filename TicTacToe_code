@@ -1,0 +1,146 @@
+# write your code here
+class TicTacToe:
+    def __init__(self):
+        # set up matrix size
+        self.game_matrix_size = 3
+        # define number of user moves in current game
+        self.available_moves = self.game_matrix_size ** 2
+        # initialize current game matrix
+        self.game_matrix = [[' ' for column in range(self.game_matrix_size)] for row in range(self.game_matrix_size)]
+        # initialize visual game attributes
+        self.framing_line = '---------'
+        self.border_element = '|'
+        # initialize variable to identify successful user move
+        self.move_done = None
+        self.user_movers_counter = 0
+        # initialize variables for game analysis
+        self.winning_line = False
+        self.winning_symbol = None
+        self.game_status_received = None
+        self.possible_input = [str(number) for number in range(10)]
+        self.possible_coordinates = [int(x) for x in range(1, 4)]
+
+    # function to get game matrix elements that will be used for game status analysis
+    def game_elements(self):
+        # create list of all game symbols with nested
+        # lists that represent game matrix COLUMNS
+        self.game_columns = [[self.game_matrix[column][row] for column in range(self.game_matrix_size)] for row in range(self.game_matrix_size)]
+
+        # create list of all game symbols with nested
+        # lists that represent game matrix DIAGONAL
+        self.game_diagonals = []
+        for i in range(2):
+            self.game_diagonals.append([])
+            for row in range(self.game_matrix_size):
+                for column in range(self.game_matrix_size):
+                    if row == column:
+                        self.game_diagonals[i].append(self.game_matrix[row][column])
+                self.game_matrix[row].reverse()
+    
+    # remake with join function
+    def print_matrix(self):
+        print_matrix = self.framing_line + '\n'
+        for i in range(len(self.game_matrix)):
+            for j in range(len(self.game_matrix[i])):
+               print_row = self.border_element + ' ' + ' '.join(self.game_matrix[i]) + ' ' + self.border_element
+            print_matrix += print_row + '\n' 
+        print_matrix += self.framing_line
+        return print_matrix
+
+    # function to check matrix elements for same
+    # symbols 
+    def check_for_same_elements(input_list):
+        for list_item in input_list:
+            if list_item != input_list[0]:
+                return False
+        # if same_list_elements and list_item != ' ':
+        if list_item != ' ':
+            return True, list_item
+
+    # function to check if there're same game symbols # in rows, columns and diagonals
+    def check_game_same_elements(self):
+        # check if there are game rows with same elements
+        for i in range(len(self.game_matrix)):
+            if TicTacToe.check_for_same_elements(self.game_matrix[i]):
+                self.winning_line = True
+                self.winning_symbol = TicTacToe.check_for_same_elements(self.game_matrix[i])[1]
+                break
+        # check if there are game columns with same elements
+        for i in range(len(self.game_columns)):
+            if TicTacToe.check_for_same_elements(self.game_columns[i]):
+                self.winning_line = True
+                self.winning_symbol = TicTacToe.check_for_same_elements(self.game_columns[i])[1]          
+                break
+        # check if there are game diagonals with same elements
+        for i in range(len(self.game_diagonals)):
+            if TicTacToe.check_for_same_elements(self.game_diagonals[i]):
+                self.winning_line = True
+                self.winning_symbol = TicTacToe.check_for_same_elements(self.game_diagonals[i])[1]           
+                break
+
+    # function to analyze current game status
+    def analyze_game(self):        
+        # check if there're matrix elements filled with # same game symbols
+        TicTacToe.check_game_same_elements(self)
+        # return current game status message
+        # return winning symbol if current game status is possible is there's a complete line of this symbol
+        if self.winning_line:         
+            print(f'{self.winning_symbol} wins')
+            self.game_status_received = True
+        # return Draw message if there're no complete lines of any symbol and there're no empty slots
+        elif self.available_moves == 0 and not(self.winning_line):
+            print('Draw')
+            self.game_status_received = True
+
+    def user_move(self):
+        # initialize game elements for analysis
+        # print initial game matrix
+        print(TicTacToe.print_matrix(self))
+        # take input from user until game finishes
+        while not(self.game_status_received):          
+            # default variable for successful user move
+            self.move_done = False
+            # take coordinates from user
+            user_coordinate = [coordinate for coordinate in input('Enter the coordinates: ').split(maxsplit=1)]
+            try:
+                column = int(user_coordinate[0])
+                row = int(user_coordinate[1])
+            # check if user provided numbers as input
+            except ValueError and IndexError:
+                print('You should enter numbers!')
+            else:
+                if int(row) not in self.possible_coordinates or int(column) not in self.possible_coordinates:
+                    print('Coordinates should be from 1 to 3!')
+                else:
+                    # reverse numbering for the game field to 
+                    # match with task numbering requirements - 
+                    # left to right, bottow to top
+                    self.game_matrix.reverse()
+                    # check if the cell user chose is occupied
+                    if self.game_matrix[int(row) - 1][int(column) - 1] != ' ':
+                        print('This cell is occupied! Choose another one!')
+                    # check if user input can be added to game matrix
+                    elif self.game_matrix[int(row) - 1][int(column) - 1] == ' ':
+                        self.user_movers_counter += 1
+                        if self.user_movers_counter % 2:
+                            self.game_matrix[int(row) - 1][int(column) - 1] = 'X'
+                        else:
+                            self.game_matrix[int(row) - 1][int(column) - 1] = 'O'
+                        self.available_moves -= 1
+                        self.move_done = True
+                    self.game_matrix.reverse()
+                    if self.move_done:
+                        print(TicTacToe.print_matrix(self))
+            # analyze current game status
+            if self.user_movers_counter >= 5 and not(self.game_status_received):
+                # initialize game elements for analysis
+                TicTacToe.game_elements(self)
+                # run script to analyze current game status
+                TicTacToe.analyze_game(self)
+            # end game if game status received
+            # if self.game_status_received:
+               # break
+  
+# start the game
+game = TicTacToe()
+game.user_move()
